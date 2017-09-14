@@ -43,16 +43,16 @@ app.get('/signup', function(req, res) {
 
 app.post('/signup', function(req, res) {
   // res.render('login');
-  var user = new User;
+  var user = new User({password: req.body.password});
+  // console.log('user is', user);
   user.set('username', req.body.username);
-  user.set('password', req.body.password);
   user.save().then(function(u) {
     console.log('We created the user ', u.get('username'));
+    res.end('User account created');
   });
   // User.forge(req.body).save().then(function(u) {
   //   console.log('We created the user ', u.get('username'));
   // });
-  res.end('User account created');
   // console.log('Request body ', req.body);
 });
 
