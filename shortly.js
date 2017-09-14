@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -22,12 +23,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true
+}));
 
-app.get('/', checkUser, function(req, res) {
+app.get('/', util.checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', checkUser, function(req, res) {
+app.get('/create', util.checkUser, function(req, res) {
   res.render('index');
 });
 
@@ -42,21 +48,34 @@ app.get('/signup', function(req, res) {
 });
 
 app.post('/signup', function(req, res) {
-  // res.render('login');
   var user = new User({password: req.body.password});
-  // console.log('user is', user);
   user.set('username', req.body.username);
   user.save().then(function(u) {
+    req.session.isLoggedIn = true;
     console.log('We created the user ', u.get('username'));
-    res.end('User account created');
+    res.redirect('/');
   });
-  // User.forge(req.body).save().then(function(u) {
-  //   console.log('We created the user ', u.get('username'));
-  // });
-  // console.log('Request body ', req.body);
 });
 
-app.get('/links', checkUser, function(req, res) {
+app.post('/login', function(req, res) {
+  var user = new User({username: req.body.username}).fetch().then(function(found) {
+    if (found) {
+      console.log('found: ', found);
+      bcrypt.compare(req.body.password, found.attributes.password, function (err, result) {
+        if (err) {
+          res.redirect('/login');
+        } else {
+          req.session.isLoggedIn = true;
+          res.redirect('/');
+        }
+      });
+    } else {
+      res.redirect('/login');
+    }
+  });
+});
+
+app.get('/links', util.checkUser, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.status(200).send(links.models);
   });
@@ -96,18 +115,7 @@ app.post('/links', function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-function checkUser(req, res, next) {
-  //logged in?
-  if (!true) {//if yes
-    next(); //continue
-  } else { //if no
-  //redirect to login page
-  // router.navigate('/login', { trigger: true });
-  res.redirect('/login');
-  // app.get('/login')
-  // res.send('You need to log in.')
-  }
-}
+
 
 
 /************************************************************/
