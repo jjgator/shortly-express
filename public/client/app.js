@@ -4,6 +4,7 @@ window.Shortly = Backbone.View.extend({
   events: {
     'click li a.index': 'renderIndexView',
     'click li a.create': 'renderCreateView'
+    // 'click li a.login': 'renderLoginView'
   },
 
   initialize: function() {
@@ -36,5 +37,14 @@ window.Shortly = Backbone.View.extend({
       .removeClass('selected')
       .filter('.' + routeName)
       .addClass('selected');
-  }
+  },
+  // testFn: function(e){
+  //   e && e.preventDefault();
+  //   console.log('Clicked!');
+  // }
+
+  // renderLoginView: function(e) {
+  //   e && e.preventDefault();
+  //   this.router.navigate('/login', { trigger: true });
+  // }
 });

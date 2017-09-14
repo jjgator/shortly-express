@@ -23,25 +23,46 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
-function(req, res) {
+app.get('/', checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
+app.get('/create', checkUser, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
-function(req, res) {
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+
+
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res) {
+  // res.render('login');
+  var user = new User;
+  user.set('username', req.body.username);
+  user.set('password', req.body.password);
+  user.save().then(function(u) {
+    console.log('We created the user ', u.get('username'));
+  });
+  // User.forge(req.body).save().then(function(u) {
+  //   console.log('We created the user ', u.get('username'));
+  // });
+  res.end('User account created');
+  // console.log('Request body ', req.body);
+});
+
+app.get('/links', checkUser, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.status(200).send(links.models);
   });
 });
 
-app.post('/links', 
-function(req, res) {
+app.post('/links', function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
@@ -75,7 +96,18 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-
+function checkUser(req, res, next) {
+  //logged in?
+  if (!true) {//if yes
+    next(); //continue
+  } else { //if no
+  //redirect to login page
+  // router.navigate('/login', { trigger: true });
+  res.redirect('/login');
+  // app.get('/login')
+  // res.send('You need to log in.')
+  }
+}
 
 
 /************************************************************/
